@@ -8,15 +8,12 @@
 #define BLU   "\x1B[34m"
 #define MAG   "\x1B[35m"
 #define CYN   "\x1B[36m"
-#define WHT   "\x1B[37m"
+#define WHT   "\x1B[39m"
 #define RESET "\x1B[0m"
-#define max 5000
-#define max_size 20000
+#define max 500
 
-float mean=0;
 float bestfitness;
 float prevDistance;
-float d;
 int bestOrder[max];
 int bestFitIndex;
 float bestDistance;
@@ -24,10 +21,8 @@ int k;
 int size;
 int verification_count,verification_max;
 float fit[max],normal;
-int order1[max],order2[max],order3[max],m1,m2,m3;
-int mutationrate=10;
+float mean;
 int evolutionrate;
-int rateconst=2;
 int generation;
 double besttime=0;
 double elapsedtime;
@@ -43,7 +38,7 @@ struct point
 struct pop
 {
         int order[max];
-} population[max_size];
+} *population;
 
 
 float Max(float a[max])
@@ -55,17 +50,6 @@ float Max(float a[max])
                         best=a[i];
         return(best);
 }
-
-void meanfitness()
-{
-        int i;
-        float f=0;
-        for(i=0; i<size; i++)
-                f=f+fit[i];
-        mean=10*(bestfitness-(f/size));
-}
-
-
 
 
 void shuffle(int a[max])
@@ -170,7 +154,7 @@ void FitPopulation()
         for(i=0; i<size; i++)
         {
                 sum=dist(i);
-                fit[i]=1/(k*log(sum));
+                fit[i]=1/sum;
 
         }
 
@@ -187,6 +171,18 @@ void normalizePopulation()
                 fit[i]=fit[i]/normal;
 }
 
+float performanceDensity()
+{
+  int i,c=0;
+  float d=0;
+  for(i=0;i<size;i++)
+    d=d+dist(i);
+  d=d/size;
+  for(i=0;i<size;i++)
+    if(dist(i)>d)
+      c++;
+  return(c);
+}
 void viewpoints()
 {
         int i;
@@ -226,8 +222,20 @@ void SelectPopulation()
                 }
 
         }
-        copy(population[0].order,population[bestFitIndex].order);
-        bestFitIndex=0;
+        if(dist(bestFitIndex)<bestDistance)
+        {
+                copy(population[0].order,population[bestFitIndex].order);
+                bestFitIndex=0;
+        }
+        if(bestDistance>dist(0))
+        {
+                time(&end_t);
+                besttime = difftime(end_t, start_t);
+                verification_count=0;
+
+        }
+        else verification_count+=1;
+        bestDistance=dist(0);
 }
 
 
@@ -243,95 +251,9 @@ float calculatedistance(int order[max])
 }
 
 
-int GMutation(int bestorder[max],float distance,int level)
-{
-        int i,j,order[max],current[max],c=0;
-        float cd;
-        copy(order,bestorder);
-        copy(current,order);
-        for(i=1; i<k-1; i++)
-        {
-                for(j=i+1; j<k-1; j++)
-                {
-                        swap_array(order,i,j);
-                        d=calculatedistance(order);
-                        cd=calculatedistance(current);
-                        if(d<distance)
-                        {
-                                copy(bestorder,order);
-                                if(c<level)
-                                        c++;
-                                else
-                                        return 1;
-
-                        }
-                        else
-                        {
-                                if(c<level)
-                                {
-                                        c++;
-                                        if(cd<d)
-                                        {
-                                                copy(current,order);
-                                        }
-                                        else
-                                                copy(order,current);
-                                }
-                                else
-                                        copy(order,bestorder);
-                        }
-                }
-
-        }
-        d=distance;
-        return 0;
-}
-
-
-void mutate(int order_passed[max],float fitness)
-{
-        int r1,r2,i,order[max];
-        int level,temp;
-        float pd,d;
-        d=calculatedistance(order_passed);
-        copy(order,order_passed);
-        meanfitness();
-        r1=size*fitness;
-        r2=size*mean;
-        level=mutationrate*(abs(10*(r2-r1)));
-
-        for ( i = 0; i < level; i++)
-        {
-                r1=random()%k;
-                r1=random()%k;
-                if(r1==0) r1=1;
-                if(r2==0) r2=1;
-                if(r1==k-1) r1=k-2;
-                if(r2==k-1) r1=k-2;
-
-                if (r1>0&&r1<k-1&&r2>0&&r2<k-1)
-                {
-                        temp=order[r1];
-                        order[r1]=order[r2];
-                        order[r2]=temp;
-                }
-                pd=calculatedistance(order);
-                if(pd<d)
-                        copy(order_passed,order);
-                else
-                        copy(order,order_passed);
-        }
-}
-
-
-
 void evolve()
 {
         int i,j,var,temp,p,order[max];
-        // for(i=0; i<size; i++)
-        //         if(dist(i)<bestDistance+10) ;
-        //         else
-        //                 copy(population[i].order,bestOrder);
 
         for(i=1; i<size; i++)
         {
@@ -347,10 +269,6 @@ void evolve()
                                         copy(order,population[i].order);
                         }
                 }
-                // temp=population[i].order[(i+1)];
-                // population[i].order[(i+1)]=population[i].order[i];
-                // population[i].order[i]=temp;
-                // GMutation(population[i].order,dist(i),10);
         }
         for(j=0; j<evolutionrate; j++)
         {
@@ -366,13 +284,13 @@ void evolve()
                 }
 
         }
-        FitPopulation();
-        normalizePopulation();
+        // FitPopulation();
+        // normalizePopulation();
         SelectPopulation();
         generation++;
 }
 
-void bestdists()
+void showdists()
 {
         int i,j;
         float d;
@@ -390,120 +308,74 @@ void bestdists()
 }
 void main()
 {
-        int i,j,m,track=0;
+        int i,j,m;
+        float pd;
         printf("Number of Points:");
         scanf("%d",&m);
         time(&start_t);
         k=m+2;
-        evolutionrate=2*k+(k/2);
-        rateconst=pow(2,log10(k));
+        evolutionrate=20;
         Genpoints();
-        Genpoints();
-        // for(i=0; i<m; i++)
-        // {
-        //         printf("%d,",points[i].x);
-        //         printf("%d|",points[i].y);
-        //
-        // }
-
-        size=(k*100)%10000;
+        size=1000;
+        population=(struct pop *)malloc(size*sizeof(struct pop));
+        mean=1/size;
         verification_max=1000;
         GenPop();
         for(i=0; i<size; i++)
-        {
                 shuffle(population[i].order);
-                // printf("\n" );
-        }
-        // exit(0);
-        FitPopulation();
-        normalizePopulation();
+
+        // FitPopulation();
+        // normalizePopulation();
         SelectPopulation();
-        printf(YEL "\nBest fitness: %f\tMean:%f\n",bestfitness,mean);
+        printf(YEL "\nBest fitness: %f\n",bestfitness);
         verification_count=0;
         m=1;
         printf(CYN "Best Performance: %f\n",dist(bestFitIndex));
         while(verification_count<verification_max)
         {
-                bestDistance=dist(bestFitIndex);
-                prevDistance=bestDistance;
 
-                for (j=0; j<rateconst; j++)
-                {
 
-                        for(i=0; i<size; i++)
-                                if(i!=bestFitIndex)
-                                        mutate(population[i].order,fit[i]);
-                        FitPopulation();
-                        normalizePopulation();
-                        SelectPopulation();
-
-                }
-
+                // for (i = 1; i < size; i++)
+                // {
+                //     short int *v=(short int*)malloc(sizeof(short int));
+                //     short int *u=(short int*)malloc(sizeof(short int));
+                //     *v=rand()%k-1;
+                //     *u=rand()%k-1;
+                //     if(*v==0)*v=1;
+                //     if(*u==0)*u=1;
+                //
+                //     swap_array(population[i].order,*v,*u);
+                //     free(v);
+                //     free(u);
+                //
+                // }
                 system("clear");
                 printf("\n" );
                 viewpoints();
                 printf("Total Points: %d\n",k);
+                pd=performanceDensity();
+                printf(BLU "Generation:%d\tGFitness:%f\n",generation,pd/size);
 
-                printf(BLU "Generation:%d\t",generation);
-                printf(BLU "GMutation:%d\tTrack:%d\tD:%f\n",m,track,d );
+                printf(YEL "\nBest fitness: %f\n",bestfitness);
 
-                printf(YEL "\nBest fitness: %f\tMean:%f\n",bestfitness,mean);
-                bestDistance=dist(bestFitIndex);
                 printf(CYN "Best Performance: %f\t",bestDistance);
                 printf(CYN "Time:%ds\n",(int)besttime);
 
-                copy(bestOrder,population[0].order);
+                copy(bestOrder,population[bestFitIndex].order);
                 printf(GRN "Best Sequence: ");
                 for(i=0; i<k; i++)
                         printf("%d ",bestOrder[i] );
                 printf("\n");
-
-                if(prevDistance==bestDistance)
-                {
-                        verification_count++;
-                        if(verification_count/100>mutationrate)
-                        {
-                                mutationrate++;
-                                // size=size-100;
-                        }
-                }
-                else
-                {
-                        verification_count=0;
-                        mutationrate=1;
-                        time(&end_t);
-                        besttime = difftime(end_t, start_t);
-                }
-                if(mutationrate>=5)
-                {
-                        mutationrate=1;
-
-                }
-
                 printf(WHT "UC Check: %d%c\t",(100*verification_count/verification_max),'%' );
                 time(&end_t);
                 elapsedtime=difftime(end_t,start_t);
                 printf(WHT "Time Elapsed:%dm %ds\n\n",(int)elapsedtime/60,(int)elapsedtime%60);
-                // evolve();
-                // track=track+GMutation(population[bestFitIndex].order,dist(bestFitIndex),11);
 
-                bestdists();
-
-                if(generation/10>m)
-                {
-                        track=track+GMutation(population[bestFitIndex].order,dist(bestFitIndex),20);
-
-                        FitPopulation();
-                        normalizePopulation();
-                        SelectPopulation();
-                        copy(bestOrder,population[bestFitIndex].order);
-                        m++;
-
-                }
+                //showdists();
                 evolve();
         }
-        FitPopulation();
-        normalizePopulation();
+        // FitPopulation();
+        // normalizePopulation();
         SelectPopulation();
         printf(YEL "\nBest fitness: %f\n",bestfitness);
         printf(CYN "Best Performance: %f\n",dist(bestFitIndex));
