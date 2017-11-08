@@ -90,8 +90,6 @@ void shuffle(int a[max])
                         a[r2]=temp;
                 }
         }
-        // for(i=0; i<k; i++)
-        // printf("%d ",a[i] );
 }
 
 
@@ -177,7 +175,7 @@ void FitPopulation()
         for(i=0; i<size; i++)
         {
                 sum=dist(i);
-                fit[i]=1/log10(sum);
+                fit[i]=10/log10(sum);
 
         }
 
@@ -192,7 +190,7 @@ void mutate()
         {
                 copy(order,population[i].order);
                 d=dist(i);
-                for(j=0; j<10*abs((int)(mean-fit[i])); j++)
+                for(j=0; j<abs((int)(mean-fit[i])); j++)
                 {
                         r1=random()%k+1;
                         r2=random()%k+1;
@@ -216,7 +214,7 @@ float performanceDensity()
         for(i=0; i<size; i++)
                 d=d+dist(i);
         d=d/size;
-        mean=1/log10(d);
+        mean=10/log10(d);
         for(i=0; i<size; i++)
                 if(dist(i)>d)
                         c++;
@@ -391,7 +389,7 @@ void main()
                 elapsedtime=difftime(end_t,start_t);
                 printf(WHT "Time Elapsed:%dm %ds\n\n",(int)elapsedtime/60,(int)elapsedtime%60);
 
-                showdists();
+                // showdists();
                 evolve();
                 if(generation/100>m)
                 {
