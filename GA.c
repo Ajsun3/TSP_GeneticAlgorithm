@@ -188,7 +188,7 @@ void mutate()
 {
         int i,j,r1,r2,*order,d;
         order=(int *)malloc(k*sizeof(int));
-        for(i=1; i<size; i++)
+        for(i=0; i<size; i++)
         {
                 copy(order,population[i].order);
                 d=dist(i);
@@ -264,6 +264,7 @@ void SelectPopulation()
         {
                 copy(population[0].order,population[bestFitIndex].order);
                 bestFitIndex=0;
+                // for(i=1;i<size;i++)copy(population[i].order,population[0].order);
         }
         if(bestDistance>dist(0))
         {
@@ -292,7 +293,7 @@ float calculatedistance(int order[max])
 void evolve()
 {
         int i,var,p,order[max];
-        for(i=1; i<size; i++)
+        for(i=0; i<size; i++)
         {
                 copy(order,population[i].order);
                 for(var=random()%k+1; var<k-1; var++)
@@ -308,7 +309,7 @@ void evolve()
                 }
         }
         p=1;
-        for(i=1; i<size; i++)
+        for(i=0; i<size; i++)
         {
                 var=rand()%size+1;
                 copy(order,population[i].order);
@@ -351,6 +352,7 @@ void main()
         scanf("%d",&m);
         time(&start_t);
         k=m+2;
+        Genpoints();
         Genpoints();
         size=300;
         population=(struct pop *)malloc(size*sizeof(struct pop));
