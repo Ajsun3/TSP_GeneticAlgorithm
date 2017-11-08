@@ -22,7 +22,6 @@ int size;
 int verification_count,verification_max;
 float fit[max],normal;
 float mean;
-int evolutionrate;
 int generation;
 double besttime=0;
 double elapsedtime;
@@ -173,15 +172,15 @@ void normalizePopulation()
 
 float performanceDensity()
 {
-  int i,c=0;
-  float d=0;
-  for(i=0;i<size;i++)
-    d=d+dist(i);
-  d=d/size;
-  for(i=0;i<size;i++)
-    if(dist(i)>d)
-      c++;
-  return(c);
+        int i,c=0;
+        float d=0;
+        for(i=0; i<size; i++)
+                d=d+dist(i);
+        d=d/size;
+        for(i=0; i<size; i++)
+                if(dist(i)>d)
+                        c++;
+        return(c);
 }
 void viewpoints()
 {
@@ -253,12 +252,11 @@ float calculatedistance(int order[max])
 
 void evolve()
 {
-        int i,j,var,temp,p,order[max];
-
+        int i,var,p,order[max];
         for(i=1; i<size; i++)
         {
                 copy(order,population[i].order);
-                for(var=rand()%k+1; var<k-1; var++)
+                for(var=random()%k+1; var<k-1; var++)
                 {
                         for(p=rand()%k+1; p<k-1; p++)
                         {
@@ -270,25 +268,25 @@ void evolve()
                         }
                 }
         }
-        for(j=0; j<evolutionrate; j++)
+        p=1;
+        for(i=1; i<size; i++)
         {
-                p=1;
-                for(i=1; i<size; i++)
+                var=rand()%size+1;
+                copy(order,population[i].order);
+                if(p<k-2)
                 {
-                        var=random()%size;
-                        if(var==0) var=1;
-                        if(p<k-2)
-                                swap(var,p,p+1);
-                        p++;
-
+                        swap(var,p,p+1);
+                        if(dist(i)<calculatedistance(order));
+                        else copy(population[i].order,order);
                 }
-
+                else p=1;
+                p++;
+                var=rand()%size+1;
         }
-        // FitPopulation();
-        // normalizePopulation();
         SelectPopulation();
         generation++;
 }
+
 
 void showdists()
 {
@@ -314,7 +312,6 @@ void main()
         scanf("%d",&m);
         time(&start_t);
         k=m+2;
-        evolutionrate=20;
         Genpoints();
         size=1000;
         population=(struct pop *)malloc(size*sizeof(struct pop));
@@ -333,22 +330,6 @@ void main()
         printf(CYN "Best Performance: %f\n",dist(bestFitIndex));
         while(verification_count<verification_max)
         {
-
-
-                // for (i = 1; i < size; i++)
-                // {
-                //     short int *v=(short int*)malloc(sizeof(short int));
-                //     short int *u=(short int*)malloc(sizeof(short int));
-                //     *v=rand()%k-1;
-                //     *u=rand()%k-1;
-                //     if(*v==0)*v=1;
-                //     if(*u==0)*u=1;
-                //
-                //     swap_array(population[i].order,*v,*u);
-                //     free(v);
-                //     free(u);
-                //
-                // }
                 system("clear");
                 printf("\n" );
                 viewpoints();
@@ -374,8 +355,6 @@ void main()
                 showdists();
                 evolve();
         }
-        // FitPopulation();
-        // normalizePopulation();
         SelectPopulation();
         printf(YEL "\nBest fitness: %f\n",bestfitness);
         printf(CYN "Best Performance: %f\n",dist(bestFitIndex));
