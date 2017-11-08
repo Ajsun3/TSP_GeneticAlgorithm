@@ -371,7 +371,7 @@ void main()
                 elapsedtime=difftime(end_t,start_t);
                 printf(WHT "Time Elapsed:%dm %ds\n\n",(int)elapsedtime/60,(int)elapsedtime%60);
 
-                //showdists();
+                showdists();
                 evolve();
         }
         // FitPopulation();
