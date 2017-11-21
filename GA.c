@@ -4,14 +4,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#define RED   "\x1B[31m"
-#define GRN   "\x1B[32m"
-#define YEL   "\x1B[33m"
-#define BLU   "\x1B[34m"
-#define MAG   "\x1B[35m"
-#define CYN   "\x1B[36m"
-#define WHT   "\x1B[39m"
-#define RESET "\x1B[0m"
 #define max 500
 
 float bestfitness;
@@ -80,8 +72,8 @@ void shuffle(int a[max])
         int i,temp,r1,r2;
         for(i=1; i<10; i++)
         {
-                r1=random()%k;
-                r2=random()%k;
+                r1=rand()%k;
+                r2=rand()%k;
 
                 if(r1>0&&r2>0&&r1<k-1&&r2<k-1)
                 {
@@ -114,9 +106,9 @@ void Genpoints()
         points[k-1].x=0;
         points[k-1].x=0;
         for (i=1; i<k-1; i++)
-                points[i].x=random()%10;
+                points[i].x=rand()%10;
         for(i=1; i<k-1; i++)
-                points[i].y=random()%10;
+                points[i].y=rand()%10;
 }
 
 
@@ -192,14 +184,14 @@ void mutate()
                 d=dist(i);
                 for(j=0; j<abs((int)(mean-fit[i])); j++)
                 {
-                        r1=random()%k+1;
-                        r2=random()%k+1;
+                        r1=rand()%k+1;
+                        r2=rand()%k+1;
                         if(r1<k-1&&r2<k-1)
                                 swap(i,r1,r2);
                         if(d<dist(i))
                                 copy(population[i].order,order);
-                        r1=random()%k+1;
-                        r2=random()%k+1;
+                        r1=rand()%k+1;
+                        r2=rand()%k+1;
                 }
         }
         free(order);
@@ -223,10 +215,10 @@ float performanceDensity()
 void viewpoints()
 {
         int i;
-        printf(WHT "Points: ");
+        printf( "Points: ");
         for(i=0; i<k; i++)
         {
-                printf(WHT "%d,",points[i].x);
+                printf( "%d,",points[i].x);
                 printf("%d|",points[i].y);
 
         }
@@ -253,7 +245,7 @@ void SelectPopulation()
 
                 if(fit[i]==bestfitness)
                 {
-                        printf(CYN "");
+                        printf( "");
                         bestFitIndex=i;
                 }
 
@@ -262,7 +254,6 @@ void SelectPopulation()
         {
                 copy(population[0].order,population[bestFitIndex].order);
                 bestFitIndex=0;
-                // for(i=1;i<size;i++)copy(population[i].order,population[0].order);
         }
         if(bestDistance>dist(0))
         {
@@ -294,7 +285,7 @@ void evolve()
         for(i=0; i<size; i++)
         {
                 copy(order,population[i].order);
-                for(var=random()%k+1; var<k-1; var++)
+                for(var=rand()%k+1; var<k-1; var++)
                 {
                         for(p=rand()%k+1; p<k-1; p++)
                         {
@@ -337,7 +328,7 @@ void showdists()
                 printf(GRN "");
                 for(j=0; j<k; j++)
                         printf("%d ",population[i].order[j]);
-                printf(WHT "d:%f\n",d );
+                printf( "d:%f\n",d );
 
         }
         printf("\n");
@@ -361,33 +352,33 @@ void main()
 
 
         SelectPopulation();
-        printf(YEL "\nBest fitness: %f\n",bestfitness);
+        printf( "\nBest fitness: %f\n",bestfitness);
         verification_count=0;
         m=1;
-        printf(CYN "Best Performance: %f\n",dist(bestFitIndex));
+        printf( "Best Performance: %f\n",dist(bestFitIndex));
         while(verification_count<verification_max)
         {
-                system("clear");
+                system("cls");
                 printf("\n" );
                 viewpoints();
                 printf("Total Points: %d\n",k);
                 pd=performanceDensity();
-                printf(BLU "Generation:%d\tGFitness:%f\tMean:%f\n",generation,pd/size,mean);
+                printf( "Generation:%d\tGFitness:%f\tMean:%f\n",generation,pd/size,mean);
 
-                printf(YEL "\nBest fitness: %f\n",bestfitness);
+                printf( "\nBest fitness: %f\n",bestfitness);
 
-                printf(CYN "Best Performance: %f\t",bestDistance);
-                printf(CYN "Time:%ds\n",(int)besttime);
+                printf( "Best Performance: %f\t",bestDistance);
+                printf( "Time:%ds\n",(int)besttime);
 
                 copy(bestOrder,population[bestFitIndex].order);
-                printf(MAG "Best Sequence: ");
+                printf( "Best Sequence: ");
                 for(i=0; i<k; i++)
                         printf("%d ",bestOrder[i] );
                 printf("\n");
-                printf(WHT "UC Check: %d%c\t",(100*verification_count/verification_max),'%' );
+                printf( "UC Check: %d%c\t",(100*verification_count/verification_max),'%' );
                 time(&end_t);
                 elapsedtime=difftime(end_t,start_t);
-                printf(WHT "Time Elapsed:%dm %ds\n\n",(int)elapsedtime/60,(int)elapsedtime%60);
+                printf( "Time Elapsed:%dm %ds\n\n",(int)elapsedtime/60,(int)elapsedtime%60);
 
                 // showdists();
                 evolve();
@@ -398,14 +389,14 @@ void main()
                 }
         }
         SelectPopulation();
-        printf(YEL "\nBest fitness: %f\n",bestfitness);
-        printf(CYN "Best Performance: %f\n",dist(bestFitIndex));
-        printf(MAG "Best Sequence: ");
+        printf( "\nBest fitness: %f\n",bestfitness);
+        printf( "Best Performance: %f\n",dist(bestFitIndex));
+        printf( "Best Sequence: ");
         for(i=0; i<k; i++)
                 printf("%d ",bestOrder[i] );
         printf("\n");
         time(&end_t);
         elapsedtime=difftime(end_t,start_t);
-        printf(CYN "Best Time:%ds\n",(int)besttime);
-        printf(WHT "Time Elapsed:%dm %ds\n",(int)elapsedtime/60,(int)elapsedtime%60);
+        printf( "Best Time:%ds\n",(int)besttime);
+        printf( "Time Elapsed:%dm %ds\n",(int)elapsedtime/60,(int)elapsedtime%60);
 }
